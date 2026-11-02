@@ -1,0 +1,15 @@
+Wat gebeurt er met de onzekerheid op een individuele meting als je de meting vaker herhaalt?
+
+Elke individuele meting heeft een kleine onzekerheid ter grootte van 1 niveau-stapje
+Hierdoor kan bij herhaald meten er soms een iets afwijkende voltage worden berekend 
+
+
+Wat gebeurt er met de onzekerheid op het gemiddelde als je een meting vaker herhaalt?
+
+Doordat de voltage lichtelijk kan fluctueren, zit er ook een onzekerheid op het gemiddelde.
+Deze onzekerheid is kleiner dan de onzekerheid op een individuele meting.
+
+
+Heb je voor jouw experiment straks de onzekerheid op een individuele meting nodig? Of de onzekerheid op het gemiddelde? Hoe bepaal je deze onzekerheid?
+
+Voor het experiment heb ik de onzekerheid op het gemiddelde nodig

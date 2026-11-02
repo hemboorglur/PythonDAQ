@@ -22,14 +22,12 @@ device = rm.open_resource(
 
 # constante omrekenenings-waardes:
 C_raw_vol = 3.3/1023
-C_vol_raw = 1023/3.3
 
-
+# niet nodig: C_vol_raw = 1023/3.3
 
 for raw_value in range(1024):
     light = device.query(f"OUT:CH0 {raw_value}")
-    voltage_LED = float(device.query("MEAS:CH0?"))
-    voltage_res = float(device.query("MEAS:CH1?"))
+    voltage_LED = C_raw_vol * float(device.query("MEAS:CH1?"))
     print(raw_value, voltage_LED)
 
 
