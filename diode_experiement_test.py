@@ -1,9 +1,11 @@
 ## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - basisscript voor het experiment "herhaalmetingen"
+## NSP2 - ECPC - basisscript voor het experiment "csv"
 ## 30 Oct '26
 
 # importeren van benodigde packages
 import pyvisa
+import statistics as stats
+from math import sqrt
 import matplotlib
 matplotlib.use("WebAgg")
 import matplotlib.pyplot as plt
@@ -25,7 +27,6 @@ arduino = rm.open_resource(
 )
 #print(arduino.query("*IDN?"))
 
-
 ### specificaties:
 # bereik voltage 0.0 V - 3.3 V
 # bereik raw_value 0 - 1023 (1024 = 2^10)
@@ -39,44 +40,82 @@ arduino = rm.open_resource(
 # volgens de wet v/Kirchoff:    u_LED = u_1 - u_2
 # volgens de wet v/Ohm:         I_LED = u_2 / R 
 
-
 # constante omrekenenings-waardes:
 C_adc_vol= 3.3/1023
 R_ohm= 220
 
-# lijsten voor de spannings- en stroomsterkte- waardes
+# lijsten voor de spannings- en stroomsterkte- waardes, 
+# en de gemiddelde waarden voor de spanning en stroomsterkte,
+# en de onzekerheid voor de spanning en stroomsterkte 
 u_LED, I_LED= [], []
+u_avg, I_avg= [], []
+u_err, I_err= [], []
 
 
 # set output voltage form 0 to max
-for i in range(1024):
-    light_i = arduino.write(f"OUT:CH0 {i}")
+# --set number of repeated measurements
 
-    # measure voltages
-    u1_adc, u2_adc= int(arduino.query("MEAS:CH1?")), int(arduino.query("MEAS:CH2?"))
+repeats = int(pow(2,5))
 
-    # calculate voltages
-    u1_vol, u2_vol= round(C_adc_vol * u1_adc, 3), round(C_adc_vol * u2_adc, 3)
+# schildpad methode gekozen (de computer doet toch het werk ;D)
 
-    # calculate current & voltage LED (and append to list)
-    u_LED.append(round(u1_vol - u2_vol, 3))
-    I_LED.append(round(( u2_vol / R_ohm )* 1000, 3))
+for i in range(pow(2,10)):
+    for rep in range(repeats):
+    
+        light_i = arduino.write(f"OUT:CH0 {i}")
 
-    # print voltage: voltage_LED V (raw_voltage_LED) current: current_LED A
+        # measure voltages
+        u1_adc, u2_adc= int(arduino.query("MEAS:CH1?")), int(arduino.query("MEAS:CH2?"))
+
+        # calculate voltages
+        u1_vol, u2_vol= C_adc_vol * u1_adc, C_adc_vol * u2_adc
+
+        # calculate current & voltage LED (and append to list)
+        u_LED.append(u1_vol - u2_vol)
+        I_LED.append(( u2_vol / R_ohm )* 1000)
+
+        # print voltage: voltage_LED V (raw_voltage_LED) current: current_LED A
+        #print(
+        #    f"ruwe waarde spanning LED: {u1_adc - u2_adc} ({u_LED[-1]} V)\n"
+        #    f"ruwe waarde spanning weerstand: {u2_adc} ({u2_vol} V)\n"
+        #    f"stroomsterkte LED: {I_LED[-1]} mA"
+        #)
+
+
+    # haal de laatste metingswaarden uit de lijst, neem het gemiddelde, voeg die waarde toe aan de lijst met gemiddelden
+    # herhaal voor standaarddeviatie
+    
+    # calculate average voltage LED and uncertainty
+    u_avg.append(stats.mean(u_LED[-repeats:]))
+    u_err.append((stats.stdev(u_LED[-repeats:])) / sqrt(repeats))
+
+    # calculate average current LED and uncertainty
+    I_avg.append(stats.mean(I_LED[-repeats:]))
+    I_err.append((stats.stdev(I_LED[-repeats:])) / sqrt(repeats))
+
+
+    # print average voltage: average_voltage_LED +/- err_average_voltage_LED V  average current: average_current_LED +/- err_average_current_LED A
     print(
-        f"ruwe waarde spanning LED: {u1_adc - u2_adc} ({u_LED[-1]} V)\n"
-        f"ruwe waarde spanning weerstand: {u2_adc} ({u2_vol} V)\n"
-        f"stroomsterkte LED: {I_LED[-1]} mA"
+        f"gemiddelde spanning LED: {u_avg[-1]:.4f} +/- {u_err[-1]:.4f} V\n"
+        f"gemiddelde stroomsterkte LED: {I_avg[-1]:.4f} +/- {I_err[-1]:.4f} mA" 
     )
-
 
 # turn LED off
 light_off = arduino.write(f"OUT:CH0 0")
 arduino.close()
 
-
 # plot current_LED vs voltage_LED
-plt.scatter(u_LED, I_LED, s=8)
+#plt.scatter(u_LED, I_LED, s=8)
+
+
+plt.errorbar(
+    u_avg,
+    I_avg,
+    xerr= u_err,
+    yerr= I_err,
+    fmt=".",
+    capsize=2,
+)
 
 plt.xlabel("LED voltage (V)")
 plt.ylabel("LED stroomsterkte (mA)")
@@ -84,3 +123,9 @@ plt.title("I tegen U uitgezet")
 
 plt.grid()
 plt.show()
+
+
+# create csv-file
+
+
+# plot average_current_LED vs average_voltage_LED
