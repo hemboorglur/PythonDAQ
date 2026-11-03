@@ -1,4 +1,4 @@
-## NOAH ZEEMAN - 15494365
+ ## NOAH ZEEMAN - 15494365
 ## NSP2 - ECPC - basisscript voor het experiment "csv"
 ## 3 Nov '26
 
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 
 # instellen van een webserver waar matplotlib de grafieken kan weergeven
-plt.rcParams["webagg.address"] = "192.168.2.166"
+plt.rcParams["webagg.address"] = "10.42.0.1"
 plt.rcParams["webagg.port"] = 8988
 plt.rcParams["webagg.open_in_browser"] = False
 
@@ -23,7 +23,7 @@ plt.rcParams["webagg.open_in_browser"] = False
 # connect to Arduino
 rm = pyvisa.ResourceManager("@py")
 ports = rm.list_resources()
-print(ports)
+#print(ports)
 
 arduino = rm.open_resource(
     "ASRL/dev/ttyACM0::INSTR", read_termination="\r\n", write_termination="\n"
@@ -58,14 +58,14 @@ u_err, I_err= [], []
 # set output voltage form 0 to max
 # --set number of repeated measurements
 
-repeats = int(pow(2,4))
+repeats = int(3)
 
 # schildpad methode gekozen (de computer doet toch het werk ;D)
 
 for i in range(pow(2,10)):
+    light_i = arduino.query(f"OUT:CH0 {i}")
+
     for rep in range(repeats):
-    
-        light_i = arduino.write(f"OUT:CH0 {i}")
 
         # measure voltages
         u1_adc, u2_adc= int(arduino.query("MEAS:CH1?")), int(arduino.query("MEAS:CH2?"))
@@ -89,19 +89,21 @@ for i in range(pow(2,10)):
     # herhaal voor standaarddeviatie
     
     # calculate average voltage LED and uncertainty
-    u_avg.append(stats.mean(u_LED[-repeats:]))
-    u_err.append((stats.stdev(u_LED[-repeats:])) / sqrt(repeats))
+    del u_LED[:-repeats]
+    u_avg.append(stats.mean(u_LED))
+    u_err.append((stats.stdev(u_LED)) / sqrt(repeats))
 
     # calculate average current LED and uncertainty
-    I_avg.append(stats.mean(I_LED[-repeats:]))
-    I_err.append((stats.stdev(I_LED[-repeats:])) / sqrt(repeats))
+    del I_LED[:-repeats]
+    I_avg.append(stats.mean(I_LED))
+    I_err.append((stats.stdev(I_LED)) / sqrt(repeats))
 
 
     # print average voltage: average_voltage_LED +/- err_average_voltage_LED V  average current: average_current_LED +/- err_average_current_LED A
-    print(
-        f"gemiddelde spanning LED: {u_avg[-1]:.4f} +/- {u_err[-1]:.4f} V\n"
-        f"gemiddelde stroomsterkte LED: {I_avg[-1]:.4f} +/- {I_err[-1]:.4f} mA" 
-    )
+    #print(
+    #    f"gemiddelde spanning LED: {u_avg[-1]:.4f} +/- {u_err[-1]:.4f} V\n"
+    #    f"gemiddelde stroomsterkte LED: {I_avg[-1]:.4f} +/- {I_err[-1]:.4f} mA" 
+    #)
 
 # turn LED off
 light_off = arduino.write(f"OUT:CH0 0")

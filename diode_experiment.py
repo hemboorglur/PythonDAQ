@@ -1,6 +1,6 @@
 ## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - basisscript voor het experiment "start script"
-## 30 Oct '26
+## NSP2 - ECPC - basisscript voor het experiment "csv"
+## 3 Nov '26
 
 # importeren van benodigde packages
 import pyvisa
