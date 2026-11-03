@@ -1,11 +1,12 @@
 ## NOAH ZEEMAN - 15494365
 ## NSP2 - ECPC - basisscript voor het experiment "csv"
-## 30 Oct '26
+## 3 Nov '26
 
 # importeren van benodigde packages
 import pyvisa
 import statistics as stats
 from math import sqrt
+import csv
 import matplotlib
 matplotlib.use("WebAgg")
 import matplotlib.pyplot as plt
@@ -55,7 +56,7 @@ u_err, I_err= [], []
 # set output voltage form 0 to max
 # --set number of repeated measurements
 
-repeats = int(pow(2,5))
+repeats = int(pow(2,4))
 
 # schildpad methode gekozen (de computer doet toch het werk ;D)
 
@@ -105,8 +106,9 @@ light_off = arduino.write(f"OUT:CH0 0")
 arduino.close()
 
 # plot current_LED vs voltage_LED
-#plt.scatter(u_LED, I_LED, s=8)
+# -> plot average_current_LED vs average_voltage_LED
 
+#plt.scatter(u_LED, I_LED, s=8)
 
 plt.errorbar(
     u_avg,
@@ -126,6 +128,9 @@ plt.show()
 
 
 # create csv-file
-
-
-# plot average_current_LED vs average_voltage_LED
+header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
+with open("data.csv", "w", newline="") as datafile:
+    writer= csv.writer(datafile)
+    writer.writerow(header)
+    for a, b, c, d, e in zip(range(pow(2,10)), u_avg, u_err, I_avg, I_err):
+        writer.writerow([a, b, c, d, e])
