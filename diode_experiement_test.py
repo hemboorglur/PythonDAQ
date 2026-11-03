@@ -2,11 +2,13 @@
 ## NSP2 - ECPC - basisscript voor het experiment "csv"
 ## 3 Nov '26
 
+
 # importeren van benodigde packages
 import pyvisa
 import statistics as stats
 from math import sqrt
 import csv
+from pathlib import Path
 import matplotlib
 matplotlib.use("WebAgg")
 import matplotlib.pyplot as plt
@@ -105,8 +107,26 @@ for i in range(pow(2,10)):
 light_off = arduino.write(f"OUT:CH0 0")
 arduino.close()
 
+
+# create csv-file
+header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
+
+# check of bestand al bestaat
+folder, n= Path("ECPC/PythonDAQ"), 1
+while (folder / f"data-{n}.csv").exists(): n+= 1
+filename= (folder / f"data-{n}.csv")
+
+# informatie naar bestand schrijven    
+with open(filename, "w", newline="") as datafile:
+    writer= csv.writer(datafile)
+    writer.writerow(header)
+    for a, b, c, d, e in zip(range(pow(2,10)), u_avg, u_err, I_avg, I_err):
+        writer.writerow([a, b, c, d, e])
+datafile.close()
+
+
 # plot current_LED vs voltage_LED
-# -> plot average_current_LED vs average_voltage_LED
+# --> plot average_current_LED vs average_voltage_LED
 
 #plt.scatter(u_LED, I_LED, s=8)
 
@@ -123,14 +143,8 @@ plt.xlabel("LED voltage (V)")
 plt.ylabel("LED stroomsterkte (mA)")
 plt.title("I tegen U uitgezet")
 
+#plt.xlim(1.75, 1.80)
+#plt.ylim(1.0, 2.0)
+
 plt.grid()
 plt.show()
-
-
-# create csv-file
-header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
-with open("data.csv", "w", newline="") as datafile:
-    writer= csv.writer(datafile)
-    writer.writerow(header)
-    for a, b, c, d, e in zip(range(pow(2,10)), u_avg, u_err, I_avg, I_err):
-        writer.writerow([a, b, c, d, e])
