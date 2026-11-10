@@ -1,6 +1,6 @@
 ## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - basisscript voor het experiment "csv"
-## 3 Nov '26
+## NSP2 - ECPC - Model-View-Controller "Pythondaq: model en view afsplitsen"
+## 10 Nov '26
 
 
 # import necessary packages
@@ -9,7 +9,8 @@ import statistics as stats
 from math import sqrt
 import csv
 from pathlib import Path
-
+from arduino_device import ArduinoVISADevice, list_resources
+import numpy as np
 
 # hash these lines for normal plt.show() rendering
 import matplotlib
@@ -21,72 +22,46 @@ import matplotlib.pyplot as plt
 # hash these lines for normal plt.show() rendering
 # Raspberry Pi OS Lite can't display graphs, 
 # so set a webserver that can render graphs in an external webbrowser
-plt.rcParams["webagg.address"] = "10.42.0.1"
+plt.rcParams["webagg.address"] = "0.0.0.0"
 plt.rcParams["webagg.port"] = 8988
 plt.rcParams["webagg.open_in_browser"] = False
 
 
+# get list resources
+print(list_resources())
 
-# connect to Arduino
-rm = pyvisa.ResourceManager("@py")
-ports = rm.list_resources()
-
-arduino = rm.open_resource(
-    "ASRL/dev/ttyACM0::INSTR", read_termination="\r\n", write_termination="\n"
-)
+# connect to Arduino via class ArduinoVISADevice
+device= ArduinoVISADevice(port="ASRL/dev/ttyACM0::INSTR")
 
 
 # set constants
 R_ohm, C_adc_vol = 220, 3.3/1023
-
 
 # set lists:
 u_LED, I_LED= [], []
 u_avg, I_avg= [], []
 u_err, I_err= [], []
 
+# set repeats
+repeats= 3
 
-# set output voltage form 0 to max
-# --set number of repeated measurements
-
-repeats = 2**3
-
-# chose the 'turtle'-method:
-# sets the light-level, measures that level repeatedly and sets the next light-level
-
-for i in range(2**10):
-    arduino.query(f"OUT:CH0 {i}")
+for i in np.arange(0, 3.3, 0.01):
+    print(device.set_output_voltage(i))
     for rep in range(repeats):
+        u_1, u_2= float(device.get_input_voltage(1)), float(device.get_input_voltage(2))
+        u_LED.append(u_1 - u_2)
+        I_LED.append(u_2 / R_ohm *1000)
 
-        # measure voltages 
-        u1_adc, u2_adc= int(arduino.query("MEAS:CH1?")), int(arduino.query("MEAS:CH2?"))
-
-        # calculate voltages
-        u1_vol, u2_vol= C_adc_vol * u1_adc, C_adc_vol * u2_adc
-
-        # calculate current & voltage LED (and append to list)
-        u_LED.append(u1_vol - u2_vol)
-        I_LED.append(( u2_vol / R_ohm )* 1000)
-
-    
-    # delete all list items except from current repeat
-    # take the average and standarddeviation using Python Standard Library module Statistics
-    # append to respective lists
-
-    # calculate average voltage LED and uncertainty
     del u_LED[:-repeats]
     u_avg.append(stats.mean(u_LED))
     u_err.append((stats.stdev(u_LED)) / sqrt(repeats))
 
-    # calculate average current LED and uncertainty
     del I_LED[:-repeats]
     I_avg.append(stats.mean(I_LED))
     I_err.append((stats.stdev(I_LED)) / sqrt(repeats))
 
-
-# turn LED off
-light_off = arduino.write(f"OUT:CH0 0")
-arduino.close()
+# turn off Arduino
+device.set_output_voltage(0)
 
 
 # create csv-file
