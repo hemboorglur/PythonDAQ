@@ -1,3 +1,6 @@
 *.csv
 #*.bundle
 /dotBundle
+__pycache__/
+*.pyc
+
