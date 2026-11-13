@@ -1,7 +1,13 @@
 ## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - Model-View-Controller "Pythondaq: model en view afsplitsen"
-## 10 Nov '26
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
+## 13 Nov '26
 
+"""Run the LED experiment and display the measurement results.
+
+Uses DiodeExperiment to measure LED voltage and current, saves
+the results to a CSV file, and plots the current-voltage characteristic
+with error bars.
+"""
 
 # import necessary packages
 from pythondaq.diode_experiment import DiodeExperiment, list_resources
@@ -23,7 +29,18 @@ plt.rcParams["webagg.port"] = 8988
 plt.rcParams["webagg.open_in_browser"] = False
 
 
-def run(start, stop, repeat):
+def run(start:int, stop:int, repeat:int) -> None:
+    """Run an LED voltage scan and process the measurement results.
+
+    Connects to the Arduino, performs repeated measurements, saves
+    the results to a CSV file - without overriding previous measurements-,
+    and plots the LED current-voltage with error bars.
+
+    Args:
+        start: Starting output voltage in volts.
+        stop: Stopping output voltage in volts.
+        repeat: Number of repeated measurements.
+       """
 
     # get list resources 
     print(list_resources())

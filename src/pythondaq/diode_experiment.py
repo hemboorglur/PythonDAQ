@@ -1,9 +1,13 @@
 ## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - Model-View-Controller "Pythondaq: model en view afsplitsen"
-## 10 Nov '26
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
+## 13 Nov '26
 
+"""Model for performing voltage and current measurements on an LED.
 
-# import necessary packages
+Provides methods for connecting to an Arduino, scanning output voltages,
+and calculating average LED voltage, current and their uncertainties.
+"""
+
 import statistics as stats
 from math import sqrt
 from pythondaq.arduino_device import ArduinoVISADevice, list_resources
@@ -11,12 +15,39 @@ import numpy as np
 
 
 class DiodeExperiment:
-    # connect to Arduino via class ArduinoVISADevice
-    def __init__(self, port):
+    """Perform LED measurements using an ArduinoVISADevice.
+
+    Provides methods for scanning output voltages and calculating 
+    average LED voltage, current and their uncertainties.
+    """
+
+    def __init__(self, port:str) -> None:
+        """Establish connection to the Arduino using ArduinoVISADevice.
+
+            Args:
+                port: VISA-address of the Arduino.
+        """
         self.device= ArduinoVISADevice(port)
 
-    # run scan with start, stop and repeat parameters
-    def scan(self, start, stop, repeats):
+    def scan(self, start:int, stop:int, repeats:int) -> tuple(list[float], list[float], list[float], list[float]):
+        """Scan output voltages and measure LED voltage and current.
+
+        Calculates the average LED voltage and current and their standard errors 
+        from repeated measurements at each voltage.
+
+        Args:
+            start: Starting output voltage in volts.
+            stop: Stopping output voltage in volts (excluded).
+            repeats: Number of repeated measurements per voltage.
+
+        Returns:
+            Tuple containing:
+                u_avg: Average LED voltages in volts.
+                u_err: Standard errors of average LED voltages in volts.
+                I_avg: Average LED currents in milliamperes.
+                I_err: Standard errors of average LED currents in milliamperes.
+        """
+
 
         # define constants and lists
         R_ohm = 220

@@ -1,6 +1,6 @@
 ## NOAH ZEEMAN - 15494365 - Universiteit van Amsterdam
-## NSP2 - ECPC - Docstrings
-## 12 Nov '26
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
+## 13 Nov '26
 
 """Controller for communicating with an Arduino through PyVISA.
 
@@ -8,14 +8,14 @@ Provides methods for connecting to the Arduino, controlling its
 output channel, and reading voltage measurements from input channels.
 """
 
-# import necessary packages
 import pyvisa
 
-# list available Arduinos
 def list_resources() -> list[str]:
     """List all available Arduino's
     
-    Returns: all available Arduino's"""
+    Returns: 
+        a list of the ports of all available Arduino's
+    """
     return pyvisa.ResourceManager("@py").list_resources()
 
 
@@ -43,21 +43,20 @@ class ArduinoVISADevice:
         """
         return self.arduino.query("*IDN?")
 
-    # set output ADC value, returns value
     def set_output_value(self, value:int) -> int:
         """Set ADC value on output channel 0
 
         Args: 
-            value (int): ADC value to put on output channel 0
-        
+            value: integer ADC value to put on output channel 0
         """
-        return self.arduino.query(f"OUT:CH0 {value}")
+        ## return self.arduino.query(f"OUT:CH0 {value}")
 
-    # set output voltage, returns rounded (2 decimals) voltage
+        self.arduino.query(f"OUT:CH0 {value}")
+
     def set_output_voltage(self, voltage: int) -> str:
         """Set the voltage on Arduino output channel 0
 
-        Converts the voltage to an ADC value using ADC conversion factor and sets 
+        Converts the voltage to an ADC value using ADC conversion factor
             
         Returns: 
             Measured voltage in volts - formatted to two decimal places - as a string.
@@ -68,7 +67,7 @@ class ArduinoVISADevice:
 
 
     def get_output_value(self) -> str:
-        """returns current ADC value on output channel 0
+        """Measures current ADC value on output channel 0
 
         Returns:
             Measured ADC value on output channel 0 as a string
@@ -76,13 +75,33 @@ class ArduinoVISADevice:
         return self.arduino.query(f"OUT:CH0?")
 
     def get_output_voltage(self) -> str:
-        """returns current voltage on output channel 0 formatted to two decimal places"""
+        """Measures current voltage on output channel 0
+
+        Converts the ADC value to voltage using ADC conversion factor
+
+        Returns:
+            Measured voltage in volts - formatted to two decimal places - as a string.
+        """
         return f"{self.C_adc_vol * self.get_output_value():.2f}"
 
-    def get_input_value(self, channel):
-        """returns measured ADC value on specified channel as integer"""
+    def get_input_value(self, channel: int) -> int:
+        """Measure ADC level on specified input channel
+        
+        Args:
+            channel: input channel number to measure
+        Returns:
+            Measured ADC value
+        """
         return int(self.arduino.query(f"MEAS:CH{channel}?"))
 
     def get_input_voltage(self, channel):
-        """returns measured voltage on specified channel as rounded (2 decimals) string"""
+        """Measure voltage on specified input channel formatted to two decimal places
+
+        Converts the ADC value to voltage using ADC conversion factor 
+
+        Args:
+            channel: input channel number to measure
+        Returns:
+            Measured voltage in volt - formatted to two decimal places - as a string
+        """
         return f"{self.get_input_value(channel) * self.C_adc_vol:.2f}"
