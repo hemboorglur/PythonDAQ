@@ -6,7 +6,7 @@
 # import necessary packages
 import statistics as stats
 from math import sqrt
-from arduino_device import ArduinoVISADevice, list_resources
+from pythondaq.arduino_device import ArduinoVISADevice, list_resources
 import numpy as np
 
 
