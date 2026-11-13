@@ -61,7 +61,7 @@ def run(start:int, stop:int, repeat:int) -> None:
     header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
 
     # check if file already exists, sets name accordingly
-    folder, n= Path("data_files"), 1
+    folder, n= Path(__file__).resolve().parents[2] / "data_files", 1
     while (folder / f"data-{n}.csv").exists(): n+= 1
     filename= (folder / f"data-{n}.csv")
 
@@ -85,5 +85,5 @@ def run(start:int, stop:int, repeat:int) -> None:
 
 
 
-start, stop, repeat= 0.00, 3.31, 6
-run(start, stop, repeat)
+# start, stop, repeat= 0.00, 3.31, 6
+# run(start, stop, repeat)

@@ -29,7 +29,7 @@ class DiodeExperiment:
         """
         self.device= ArduinoVISADevice(port)
 
-    def scan(self, start:int, stop:int, repeats:int) -> tuple(list[float], list[float], list[float], list[float]):
+    def scan(self, start:int, stop:int, repeats:int) -> tuple[list[float], list[float], list[float], list[float]]:
         """Scan output voltages and measure LED voltage and current.
 
         Calculates the average LED voltage and current and their standard errors 
@@ -37,11 +37,11 @@ class DiodeExperiment:
 
         Args:
             start: Starting output voltage in volts.
-            stop: Stopping output voltage in volts (excluded).
+            stop: Stopping output voltage in volts.
             repeats: Number of repeated measurements per voltage.
 
         Returns:
-            Tuple containing:
+            Tuple with:
                 u_avg: Average LED voltages in volts.
                 u_err: Standard errors of average LED voltages in volts.
                 I_avg: Average LED currents in milliamperes.

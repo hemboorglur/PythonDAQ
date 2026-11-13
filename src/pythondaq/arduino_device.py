@@ -94,7 +94,7 @@ class ArduinoVISADevice:
         """
         return int(self.arduino.query(f"MEAS:CH{channel}?"))
 
-    def get_input_voltage(self, channel):
+    def get_input_voltage(self, channel: int) -> str:
         """Measure voltage on specified input channel formatted to two decimal places
 
         Converts the ADC value to voltage using ADC conversion factor 
