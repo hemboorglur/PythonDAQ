@@ -1,6 +1,6 @@
 ## NOAH ZEEMAN - 15494365
 ## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
-## 13 Nov '26
+## 13 Nov '26 / 23 Nov '26 (latest change)
 
 """Run the LED experiment and display the measurement results.
 
@@ -9,7 +9,6 @@ the results to a CSV file, and plots the current-voltage characteristic
 with error bars.
 """
 
-# import necessary packages
 from pythondaq.diode_experiment import DiodeExperiment, list_resources
 import csv
 from pathlib import Path
@@ -42,30 +41,21 @@ def run(start:int, stop:int, repeat:int) -> None:
         repeat: Number of repeated measurements.
        """
 
-    # get list resources 
     print(list_resources())
-
-    # connect to Arduino via class DiodeExperimemnt
+    
     device= DiodeExperiment(port="ASRL/dev/ttyACM0::INSTR")
-
-    # get average voltage, average current, error average voltage and error average current from method scan(start, stop, repeat)
     u_avg, u_err, I_avg, I_err= device.scan(start, stop, repeat)
-
-    # print average voltage: average_voltage_LED +/- err_average_voltage_LED V  average current: average_current_LED +/- err_average_current_LED A
     print(
         f"gemiddelde spanning LED: {u_avg[-1]:.4f} +/- {u_err[-1]:.4f} V\n"
         f"gemiddelde stroomsterkte LED: {I_avg[-1]:.4f} +/- {I_err[-1]:.4f} mA" 
     )
 
-    # create csv-file
     header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
 
-    # check if file already exists, sets name accordingly
     folder, n= Path(__file__).resolve().parents[2] / "data_files", 1
     while (folder / f"data-{n}.csv").exists(): n+= 1
     filename= (folder / f"data-{n}.csv")
 
-    # write information to file
     with open(filename, "w", newline="") as datafile:
         writer= csv.writer(datafile)
         writer.writerow(header)
@@ -73,7 +63,6 @@ def run(start:int, stop:int, repeat:int) -> None:
             writer.writerow([a, b, c, d, e])
     datafile.close()
 
-    # plot average_current_LED vs average_voltage_LED
     plt.errorbar(u_avg, I_avg, xerr= u_err, yerr= I_err, fmt=".", capsize=2,)
 
     plt.xlabel("LED voltage (V)")
@@ -82,8 +71,3 @@ def run(start:int, stop:int, repeat:int) -> None:
 
     plt.grid()
     plt.show()
-
-
-
-# start, stop, repeat= 0.00, 3.31, 6
-# run(start, stop, repeat)
