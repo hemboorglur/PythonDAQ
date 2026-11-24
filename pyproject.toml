@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "click>=8.5.1",
     "matplotlib>=3.11.2",
     "numpy>=2.5.4",
     "pyserial>=3.5",
@@ -18,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 pythondaq = "pythondaq:main"
+diode = "pythondaq.cli:cmd_group"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]

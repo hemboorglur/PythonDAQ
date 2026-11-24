@@ -1,6 +1,6 @@
 ## NOAH ZEEMAN - 15494365 - Universiteit van Amsterdam
-## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
-## 13 Nov '26
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: veni vidi vici"
+## 13 Nov '26 / 23 Nov '26 (latest change)
 
 """Controller for communicating with an Arduino through PyVISA.
 
@@ -9,6 +9,7 @@ output channel, and reading voltage measurements from input channels.
 """
 
 import pyvisa
+
 
 def list_resources() -> list[str]:
     """List all available Arduino's
@@ -49,8 +50,6 @@ class ArduinoVISADevice:
         Args: 
             value: integer ADC value to put on output channel 0
         """
-        ## return self.arduino.query(f"OUT:CH0 {value}")
-
         self.arduino.query(f"OUT:CH0 {value}")
 
     def set_output_voltage(self, voltage: int) -> str:
@@ -61,9 +60,8 @@ class ArduinoVISADevice:
         Returns: 
             Measured voltage in volts - formatted to two decimal places - as a string.
         """
-
         self.set_output_value(int(voltage * self.C_vol_adc))
-        return f"{voltage:.2f} V"
+        return f"{voltage} V"
 
 
     def get_output_value(self) -> str:
@@ -82,7 +80,7 @@ class ArduinoVISADevice:
         Returns:
             Measured voltage in volts - formatted to two decimal places - as a string.
         """
-        return f"{self.C_adc_vol * self.get_output_value():.2f}"
+        return f"{self.C_adc_vol * self.get_output_value()}"
 
     def get_input_value(self, channel: int) -> int:
         """Measure ADC level on specified input channel
@@ -104,4 +102,4 @@ class ArduinoVISADevice:
         Returns:
             Measured voltage in volt - formatted to two decimal places - as a string
         """
-        return f"{self.get_input_value(channel) * self.C_adc_vol:.2f}"
+        return f"{self.get_input_value(channel) * self.C_adc_vol}"

@@ -1,5 +1,5 @@
-## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
+## NOAH ZEEMAN - 15494365 - Universiteit van Amsterdam
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: veni vidi vici"
 ## 13 Nov '26 / 23 Nov '26 (latest change)
 
 """Model for performing voltage and current measurements on an LED.
@@ -64,11 +64,16 @@ class DiodeExperiment:
 
             del u_LED[:-repeats]
             u_avg.append(stats.mean(u_LED))
-            u_err.append((stats.stdev(u_LED)) / sqrt(repeats))
 
             del I_LED[:-repeats]
             I_avg.append(stats.mean(I_LED))
-            I_err.append((stats.stdev(I_LED)) / sqrt(repeats))
+            
+            if repeats > 1:
+                u_err.append(stats.stdev(u_LED) / sqrt(repeats))
+                I_err.append(stats.stdev(I_LED) / sqrt(repeats))
+            else:
+                u_err.append(float("nan"))
+                I_err.append(float("nan"))
 
         self.device.set_output_voltage(0)
         return u_avg, u_err, I_avg, I_err

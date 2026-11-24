@@ -1,5 +1,5 @@
-## NOAH ZEEMAN - 15494365
-## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: applicatie"
+## NOAH ZEEMAN - 15494365 - Universiteit van Amsterdam
+## NSP2 - ECPC - Pythonprojecten met uv "Pythondaq: veni vidi vici"
 ## 13 Nov '26 / 23 Nov '26 (latest change)
 
 """Run the LED experiment and display the measurement results.
@@ -13,22 +13,21 @@ from pythondaq.diode_experiment import DiodeExperiment, list_resources
 import csv
 from pathlib import Path
 
-# hash these lines for normal plt.show() rendering
+# choose the backend for matplotlib depending on the system
 import matplotlib
-matplotlib.use("WebAgg")
+# matplotlib.use("WebAgg")
+matplotlib.use("MacOSX")
 
-# don't hash this line, has to import after setting a webserver
+# don't hash this line
 import matplotlib.pyplot as plt
 
-# hash these lines for normal plt.show() rendering
-# Raspberry Pi OS Lite can't display graphs, 
-# so set a webserver that can render graphs in an external webbrowser
-plt.rcParams["webagg.address"] = "0.0.0.0"
-plt.rcParams["webagg.port"] = 8988
-plt.rcParams["webagg.open_in_browser"] = False
+# set webserver for rendering
+# plt.rcParams["webagg.address"] = "0.0.0.0"
+# plt.rcParams["webagg.port"] = 8988
+# plt.rcParams["webagg.open_in_browser"] = False
 
 
-def run(start:int, stop:int, repeat:int) -> None:
+def run(start:float, stop:float, repeat:int, stepsize:float) -> None:
     """Run an LED voltage scan and process the measurement results.
 
     Connects to the Arduino, performs repeated measurements, saves
@@ -39,28 +38,27 @@ def run(start:int, stop:int, repeat:int) -> None:
         start: Starting output voltage in volts.
         stop: Stopping output voltage in volts.
         repeat: Number of repeated measurements.
+        stepsize: Size of the voltage steps in volts.
        """
 
     print(list_resources())
     
     device= DiodeExperiment(port="ASRL/dev/ttyACM0::INSTR")
-    u_avg, u_err, I_avg, I_err= device.scan(start, stop, repeat)
+    u_avg, u_err, I_avg, I_err= device.scan(start, stop, repeat, stepsize)
     print(
         f"gemiddelde spanning LED: {u_avg[-1]:.4f} +/- {u_err[-1]:.4f} V\n"
         f"gemiddelde stroomsterkte LED: {I_avg[-1]:.4f} +/- {I_err[-1]:.4f} mA" 
     )
 
-    header= ['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)']
 
     folder, n= Path(__file__).resolve().parents[2] / "data_files", 1
     while (folder / f"data-{n}.csv").exists(): n+= 1
     filename= (folder / f"data-{n}.csv")
 
-    with open(filename, "w", newline="") as datafile:
-        writer= csv.writer(datafile)
-        writer.writerow(header)
-        for a, b, c, d, e in zip(range(pow(2,10)), u_avg, u_err, I_avg, I_err):
-            writer.writerow([a, b, c, d, e])
+    with filename.open("w", newline="") as datafile:
+        writer = csv.writer(datafile)
+        writer.writerow(['raw_value', 'u_avg (V)', 'u_err (V)', 'I_avg (mA)', 'I_err (mA)'])
+        writer.writerows(zip(u_avg, u_err, I_avg, I_err))
     datafile.close()
 
     plt.errorbar(u_avg, I_avg, xerr= u_err, yerr= I_err, fmt=".", capsize=2,)
@@ -71,3 +69,5 @@ def run(start:int, stop:int, repeat:int) -> None:
 
     plt.grid()
     plt.show()
+    
+run(0, 3.31, 1, 0.01)
