@@ -1,6 +1,10 @@
 *.csv
 #*.bundle
 /dotBundle
+/MVC_code
+/tests
+/old_code
 __pycache__/
 *.pyc
+
 
